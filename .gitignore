@@ -1,0 +1,58 @@
+# Data files
+data/**/.csv
+
+# Python virtual env
+.venv*
+
+# Jupyter NB Checkpoints
+notebooks/.ipynb_checkpoints
+notebooks/.~*
+
+# Lets leave the docs for now.
+docs/* 
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Translations
+*.mo
+*.pot
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Database
+*.db
+*.rdb
+
+# Pycharm
+.idea
+
+# VS Code
+.vscode/
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+data/example_dataset_dash.pkl
