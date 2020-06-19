@@ -2,10 +2,25 @@ Stor water: predictive maintenance mockup (pdm)
 ==============================
 
 
+## Quickstart
+
+1. Check that Python is installed with `python -V` (I use `Python 3.8.2`). If not, [download Python](https://www.python.org/downloads/release/python-382/) and install. Mostly likely works with different versions
+2. Clone/download project: `git clone https://github.com/StorWater/PdM_mockup.git .`. Go to project location `cd PdM_mockup`
+3. Create new virtual environment: `make create_environment`
+4. Activate it: `source .\.venv_storpdm\Scripts\activate`
+5. Install packages with `make requirements` or `pip install -r requirements.txt`
+6. Ready to go! Launch juptter lab: `jupyter lab`, open via [http://localhost:8888/](http://localhost:8050/)
+
+
+## Inspiration repositories and notebooks
+
+- https://github.com/PMetcalf/nasa_turbofan_failure_prediction
+- https://github.com/MaDooSan/azureml-iotfuse2019/blob/04cb87120a17669be1c6198a7a79e0dd505c149f/75F%20ML%20-%20NASA%20turbofan%20engine%20degradation%20analysis.ipynb
+- https://www.kaggle.com/kucherevskiy/rul-prediction
+- https://www.kaggle.com/darkside92/nasa-turbofan-engine-rul-predictive-maintenance
 
 Project Organization
 ------------
-
 
     ├── LICENSE
     ├── Makefile           <- Makefile with commands like `make data` or `make train`
@@ -54,7 +69,7 @@ jupyter labextension install plotlywidget@1.4.0 --no-build
 jupyter labextension install @jupyterlab/toc --no-build
 jupyter labextension install @ryantam626/jupyterlab_code_formatter --no-build
 pip install jupyterlab_code_formatter
-jupyter serverextension enable --py jupyterlab_code_formatter --no-build
+jupyter serverextension enable --py jupyterlab_code_formatter
 jupyter lab build
 ```
 
