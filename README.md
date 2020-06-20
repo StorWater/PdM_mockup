@@ -64,7 +64,8 @@ This is the configuration of the extensions I am using:
 ```
 set NODE_OPTIONS=--max-old-space-size=4096
 jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.1 --no-build
-jupyter labextension install jupyterlab-plotly@1.4.0 --no-build
+jupyter labextension install jupyterlab-plotly@4.8.1 --no-build
+jupyter labextension install @jupyter-widgets/jupyterlab-manager plotlywidget@4.8.1 --no-build
 jupyter labextension install plotlywidget@1.4.0 --no-build
 jupyter labextension install @jupyterlab/toc --no-build
 jupyter labextension install @ryantam626/jupyterlab_code_formatter --no-build
