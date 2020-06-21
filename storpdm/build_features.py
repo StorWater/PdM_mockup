@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 
 def find_correlated_data(data_df, correlation_threshold):
@@ -7,14 +9,14 @@ def find_correlated_data(data_df, correlation_threshold):
 
     Parameters
     -----------
-    data_df : pd.dataFrame)
+    data_df : pd.DataFrame)
         Dataframe containing data to be analysed.
     correlation_threshold : float
         Thershold value above which correlation is assumed.
 
    Returns
    --------
-	data_with_correlation : tuple
+    tuple
         Tuple of two-column data sets, with correlation.
     """
 
@@ -50,9 +52,10 @@ def list_correlated_data(correlated_data):
     -----------
 	correlated_data : tuple
         Tuple of data columns with high correlation.
+
    Returns
    --------
-	data_entities : list
+    list
         List of data columns correlated at least once.
     """
 
@@ -74,23 +77,24 @@ def list_correlated_data(correlated_data):
     return data_list
 
 
-def find_time_independent_columns(data_df):
-    """
-    Returns a list of columns that do not change with time.
+def find_time_independent_columns(data_df, std_threshold = 0.0001):
+    """Returns a list of columns that do not change with time (i.e. almost zero
+    standard deviation)
 
     Parameters
     -----------
-	data_df : dataFrame
+	data_df : DataFrame
         Dataframe containing time-series data.
-        
+    std_threshold : float, default 0.0001
+        Filter columns with std lower than this threshold
+
    Returns
    --------
-	unchanging_columns : list
+    list
         List of columns from dataframe which do not change with time.
     """
 
     unchanging_columns = []
-    std_threshold = 0.0001
 
     # Iterate over columns; Identify if std is close-coupled to mean.
     for column in data_df.columns:
@@ -112,17 +116,65 @@ def add_calculated_rul(df):
     
     Parameters
     -----------
-	df : pd.dataFrame
+	df : pd.DataFrame
         Dataframe containing time-series data.
         
     Returns
-	pd.dataFrame
+	pd.DataFrame
         dataset, inclusive of calculated RUL values.
     """
 
     # RUL is negative and trends to zero (end of life point)
-    df['RUL'] = df.groupby('id').apply(
-            lambda x: x["cycle"].max() - x["cycle"]
-        ).reset_index()['cycle']
+    df["RUL"] = (
+        df.groupby("id")
+        .apply(lambda x: x["cycle"].max() - x["cycle"])
+        .reset_index()["cycle"]
+    )
 
     return df
+
+
+def prepare_training_data(df, target_col, scaled=False, discard_cols = None, test_size=0.2
+):
+    """Prepare and return training and test data arrays from input dataframe, 
+    normalising using 
+    
+    Parameters
+    -----------
+    df : pd.DataFrame
+        Dataframe containing training dataset.
+    target_col : str
+        Target value for model training.
+    discard_cols : str, list of str, default None
+        Determines which column to drop
+    
+    Returns
+    --------
+    X_train : pd.DataFrame
+        Training feature columns
+    X_test : pd.DataFrame
+        Testing features columns
+    y_train : pd.DataFrame
+        Training target column
+    y_test  : pd.DataFrame 
+        Testing target column
+    """
+
+    if discard_cols:
+        df = df.drop(discard_cols, axis=1)
+
+
+    # Split X and y
+    X = df.drop(target_col, axis=1)
+    y = df[target_col].values
+
+    if scaled:
+        scalar = StandardScaler()  # alternative: MinMaxScalar() TODO
+        X = scalar.fit_transform(X)
+
+    # Create split between training and test sets.
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=0
+    )
+
+    return X_train, X_test, y_train, y_test

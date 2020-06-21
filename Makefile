@@ -7,7 +7,7 @@
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROFILE = default
 PROJECT_NAME = storpdm
-PYTHON_INTERPRETER = python3
+PYTHON_INTERPRETER = python3.7
 HAS_CONDA = False
 VENV_NAME = .venv_storpdm
 

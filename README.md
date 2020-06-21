@@ -4,7 +4,7 @@ Stor water: predictive maintenance mockup (pdm)
 
 ## Quickstart
 
-1. Check that Python is installed with `python -V` (I use `Python 3.8.2`). If not, [download Python](https://www.python.org/downloads/release/python-382/) and install. Mostly likely works with different versions
+1. Check that Python is installed with `python -V` (I use `Python 3.7.4`). If not, [download Python](https://www.python.org/downloads/release/python-374/) and install. Mostly likely works with different versions, I could not install shap with 3.8
 2. Clone/download project: `git clone https://github.com/StorWater/PdM_mockup.git .`. Go to project location `cd PdM_mockup`
 3. Create new virtual environment: `make create_environment`
 4. Activate it: `source .\.venv_storpdm\Scripts\activate`
@@ -63,7 +63,7 @@ This is the configuration of the extensions I am using:
 
 ```
 set NODE_OPTIONS=--max-old-space-size=4096
-jupyter labextension install @jupyter-widgets/jupyterlab-manager@1.1 --no-build
+jupyter labextension install @jupyter-widgets/jupyterlab-manager@2.0 --no-build
 jupyter labextension install jupyterlab-plotly@4.8.1 --no-build
 jupyter labextension install @jupyter-widgets/jupyterlab-manager plotlywidget@4.8.1 --no-build
 jupyter labextension install plotlywidget@1.4.0 --no-build
