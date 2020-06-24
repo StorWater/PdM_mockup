@@ -7,7 +7,8 @@ from typing import Union, Tuple
 import requests, zipfile, io
 import pandas as pd
 
-def download_dataset(file_location : Union[str, Path] = "data/raw/"):
+
+def download_dataset(file_location: Union[str, Path] = "data/raw/"):
     """Download and unzips raw data
 
     Parameters
@@ -25,8 +26,9 @@ def download_dataset(file_location : Union[str, Path] = "data/raw/"):
     print(f"Done. Data downloaded at {file_location}")
 
 
-def import_dataset(filename : Union[str, Path] = "FD001" ) -> \
-    Tuple[pd.DataFrame,pd.DataFrame,pd.DataFrame]:
+def import_dataset(
+    filename: Union[str, Path] = "FD001"
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Import the dataset as a dataframe, adding column names.
 
     Parameters
@@ -45,8 +47,8 @@ def import_dataset(filename : Union[str, Path] = "FD001" ) -> \
             Testing dataset
     """
 
-    if filename not in ['FD001','FD002','FD003','FD004']:
-        raise ValueError('Wrong filename.')
+    if filename not in ["FD001", "FD002", "FD003", "FD004"]:
+        raise ValueError("Wrong filename.")
 
     dataset_columns = [
         "id",
@@ -54,40 +56,48 @@ def import_dataset(filename : Union[str, Path] = "FD001" ) -> \
         "op1",
         "op2",
         "op3",
-        "sensor1",
-        "sensor2",
-        "sensor3",
-        "sensor4",
-        "sensor5",
-        "sensor6",
-        "sensor7",
-        "sensor8",
-        "sensor9",
-        "sensor10",
-        "sensor11",
-        "sensor12",
-        "sensor13",
-        "sensor14",
-        "sensor15",
-        "sensor16",
-        "sensor17",
-        "sensor18",
-        "sensor19",
-        "sensor20",
-        "sensor21",
+        "FanInletTemp",
+        "LPCOutletTemp",
+        "HPCOutletTemp",
+        "LPTOutletTemp",
+        "FanInletPres",
+        "BypassDuctPres",
+        "TotalHPCOutletPres",
+        "PhysFanSpeed",
+        "PhysCoreSpeed",
+        "EnginePresRatio",
+        "StaticHPCOutletPres",
+        "FuelFlowRatio",
+        "CorrFanSpeed",
+        "CorrCoreSpeed",
+        "BypassRatio",
+        "BurnerFuelAirRatio",
+        "BleedEnthalpy",
+        "DemandFanSpeed",
+        "DemandCorrFanSpeed",
+        "HPTCoolantBleed",
+        "LPTCoolantBleed",
     ]
 
     # Import the raw data into series of dataframes.
     df_rul = pd.read_csv(
-        'data/raw/RUL_' + filename + '.txt', header=None, names=['rul'], delim_whitespace=True
+        "data/raw/RUL_" + filename + ".txt",
+        header=None,
+        names=["rul"],
+        delim_whitespace=True,
     )
     df_train = pd.read_csv(
-        'data/raw/train_' + filename + '.txt', header=None, names=dataset_columns, delim_whitespace=True
+        "data/raw/train_" + filename + ".txt",
+        header=None,
+        names=dataset_columns,
+        delim_whitespace=True,
     )
     df_test = pd.read_csv(
-        'data/raw/test_' + filename + '.txt', header=None, names=dataset_columns, delim_whitespace=True
+        "data/raw/test_" + filename + ".txt",
+        header=None,
+        names=dataset_columns,
+        delim_whitespace=True,
     )
-
 
     return df_rul, df_train, df_test
 

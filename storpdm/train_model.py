@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 
 from sklearn.model_selection import GridSearchCV
+from sklearn.utils.validation import check_is_fitted
+
 
 class EstimatorSelectionHelper:
     def __init__(self, models, params):
@@ -81,6 +83,7 @@ class EstimatorSelectionHelper:
             else:
                 if self.grid_searches[k].best_score_ > best_score:
                     best_model = self.grid_searches[k].best_estimator_
+                    best_score = self.grid_searches[k].best_score_
 
         if set_attr:
             self.best_model = best_model
