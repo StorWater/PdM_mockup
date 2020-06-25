@@ -215,7 +215,7 @@ def interactive_rul_series(df, filename=None):
     return fig
 
 
-def display_roc_pr(precision, recall, fpr, thres, title="", fig=None, i=0):
+def display_roc_pr(precision, recall, fpr, thres, title="", fig=None, color=("#1f77b4","#ff7f0e")):
     """[summary]
 
     TODO: documentation
@@ -234,7 +234,7 @@ def display_roc_pr(precision, recall, fpr, thres, title="", fig=None, i=0):
         [description], by default ""
     fig : [type], optional
         [description], by default None
-    i : int, optional
+    i_col : int, optional
         [description], by default 0
 
     Returns
@@ -273,7 +273,7 @@ def display_roc_pr(precision, recall, fpr, thres, title="", fig=None, i=0):
             name=f"{title} [ROC]",
             hovertext=hovertext,
             hoverinfo="text",
-            line=dict(color=colors[i]),
+            line=dict(color=color[0]),
         ),
         row=1,
         col=1,
@@ -300,7 +300,7 @@ def display_roc_pr(precision, recall, fpr, thres, title="", fig=None, i=0):
             name=f"{title} [Precision-recall]",
             hovertext=hovertext,
             hoverinfo="text",
-            line=dict(color=colors[i]),
+            line=dict(color=color[1]),
         ),
         row=1,
         col=2,
