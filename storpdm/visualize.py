@@ -10,9 +10,12 @@ import plotly
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
+import plotly.io as pio
+
+pio.templates.default = "none"
 
 
-def visualise_sensor_correlation_all_engine(data_df):
+def visualise_sensor_correlation_all_engine(df, title="Correlation Matrix"):
     """Plot and save the correlation between sensors for all engines in the dataset.
 
     Parameters
@@ -22,26 +25,106 @@ def visualise_sensor_correlation_all_engine(data_df):
 
     Returns
     --------
-    matplotlib.figure.Figure
+    plotly.Figure
         Heatmap representing correlation between features
     """
 
-    # Remove the time column from the dataframe.
-    modified_df = data_df.drop("cycle", axis=1)
+    df = df.drop(["id", "cycle"], axis=1)
+    N = df.shape[1]
+    corr = df.corr()
+    labels = df.columns.to_list()
 
-    # Create correlation.
-    sensor_corr = modified_df.corr()
+    # Show low triangular only
+    for i in range(corr.shape[0]):
+        for j in range(corr.shape[1]):
+            if i > j:
+                corr.iloc[i, j] = None
 
-    # Define and show correlation plot.
-    corr_fig = sns.heatmap(
-        sensor_corr,
-        xticklabels=sensor_corr.columns.values,
-        yticklabels=sensor_corr.columns.values,
-        cmap="RdYlGn",
+    # Define labels and colors
+    hovertext = [
+        [f"corr({labels[i]}, {labels[j]})= {corr.iloc[i,j]:.2f}" for j in range(N)]
+        for i in range(N)
+    ]
+
+    sns_colorscale = [
+        [0.0, "#3f7f93"],  # cmap = sns.diverging_palette(220, 10, as_cmap = True)
+        [0.071, "#5890a1"],
+        [0.143, "#72a1b0"],
+        [0.214, "#8cb3bf"],
+        [0.286, "#a7c5cf"],
+        [0.357, "#c0d6dd"],
+        [0.429, "#dae8ec"],
+        [0.5, "#f2f2f2"],
+        [0.571, "#f7d7d9"],
+        [0.643, "#f2bcc0"],
+        [0.714, "#eda3a9"],
+        [0.786, "#e8888f"],
+        [0.857, "#e36e76"],
+        [0.929, "#de535e"],
+        [1.0, "#d93a46"],
+    ]
+
+    heat = go.Heatmap(
+        z=corr,
+        x=labels,
+        y=labels,
+        xgap=1,
+        ygap=1,
+        colorscale=sns_colorscale,
+        colorbar_thickness=20,
+        colorbar_ticklen=3,
+        hovertext=hovertext,
+        hoverinfo="text",
     )
-    plt.title("Engine Data Correlation")
 
-    return corr_fig
+    layout = go.Layout(
+        title_text=title,
+        title_x=0.5,
+        width=600,
+        height=600,
+        xaxis_showgrid=False,
+        yaxis_showgrid=False,
+        yaxis_autorange="reversed",
+    )
+
+    return go.Figure(data=[heat], layout=layout)
+
+
+def visualise_sensor_correlation_double(df1, df2, subplot_titles=("", "")):
+    """[summary]
+    doc: TODO
+
+    Parameters
+    ----------
+    df1 : [type]
+        [description]
+    df2 : [type]
+        [description]
+    subplot_titles : tuple of str
+        ...
+    """
+
+    from plotly.subplots import make_subplots
+    import plotly.graph_objects as go
+
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=subplot_titles,
+        print_grid=False,
+        horizontal_spacing=0.2,
+    )
+
+    fig_subplot1 = visualise_sensor_correlation_all_engine(df1)
+    fig.add_trace(go.Heatmap(fig_subplot1.data[0]), row=1, col=1)
+
+    fig_subplot2 = visualise_sensor_correlation_all_engine(df2)
+    fig.add_trace(go.Heatmap(fig_subplot2.data[0]), row=1, col=2)
+
+    fig.update_layout(
+        height=750, width=1200, margin=dict(l=150, b=150),
+    )
+    return fig
 
 
 def visualise_sensor_data_distribution(dataset_df):
@@ -76,7 +159,6 @@ def visualise_sensor_data_distribution(dataset_df):
         ax = sns.distplot(plotted_dataset_df[column], ax=ax, label=column)
         ax.legend(loc=1)
 
-    # Save plot.
     return fig
 
 
@@ -149,24 +231,32 @@ def define_visibles(x):
     return visible_trace
 
 
-def interactive_rul_series(df, filename=None):
+def interactive_rul_series(df, id_filter=None, filename=None):
     """Create interative plot
 
     # TODO: document and make general
     """
+
+    if id_filter:
+        # Filter IDs
+        df = df[df.id.isin(id_filter)]
+
     z_all = df.columns.drop("RUL")
     fig = go.Figure()
     buttons = []
     visible_start = [True] + [False] * (len(z_all) - 1)
 
     # Select which columns are visible for each button
-    visible_trace = define_visibles([100] * len(z_all))
+    n_unique = df.id.nunique()
+    visible_trace = define_visibles([n_unique] * len(z_all))
 
     # Loop over the selected columns and create trace
     for i, z in enumerate(z_all):
 
         # Generate figure and keep data and layout
-        temp_fig = px.line(df, x="RUL", y=z, color="id", hover_name="op1")
+        temp_fig = px.line(
+            df, x="RUL", y=z, color="id", hover_name="op1", render_mode="webgl"
+        )
 
         # Add traces, one per boxplot
         for f in temp_fig.data:
@@ -215,7 +305,9 @@ def interactive_rul_series(df, filename=None):
     return fig
 
 
-def display_roc_pr(precision, recall, fpr, thres, title="", fig=None, color=("#1f77b4","#ff7f0e")):
+def display_roc_pr(
+    precision, recall, fpr, thres, title="", fig=None, color=("#1f77b4", "#ff7f0e")
+):
     """[summary]
 
     TODO: documentation
@@ -317,10 +409,9 @@ def display_roc_pr(precision, recall, fpr, thres, title="", fig=None, color=("#1
     return fig
 
 
-def plot_confusion_matrix(cm, classes,
-                          normalize=False,
-                          title='Confusion matrix',
-                          cmap=plt.cm.Blues):
+def plot_confusion_matrix(
+    cm, classes, normalize=False, title="Confusion matrix", cmap=plt.cm.Blues
+):
     """[summary]
 
     TODO: docum
@@ -337,39 +428,39 @@ def plot_confusion_matrix(cm, classes,
     cmap : [type], optional
         [description], by default plt.cm.Blues
     """
-    
+
     # General outline parameters
-    font = {'family' : 'DejaVu Sans',
-        'weight' : 'bold',
-        'size'   : 15}
-    matplotlib.rc('font', **font)
-    matplotlib.rcParams['figure.figsize'] = [10,10]
+    font = {"family": "DejaVu Sans", "weight": "bold", "size": 15}
+    matplotlib.rc("font", **font)
+    matplotlib.rcParams["figure.figsize"] = [10, 10]
     plt.rcParams["axes.grid"] = False
-    
+
     if normalize:
-        print('Confusion matrix before normalization')
+        print("Confusion matrix before normalization")
         print(cm)
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
     else:
-        print('Confusion matrix, without normalization')
+        print("Confusion matrix, without normalization")
 
-    
-
-    plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    plt.title(title,fontsize=18)
+    plt.imshow(cm, interpolation="nearest", cmap=cmap)
+    plt.title(title, fontsize=18)
     plt.colorbar(fraction=0.046, pad=0.04)
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)
 
-    fmt = '.2f' if normalize else 'd'
-    thresh = cm.max() / 2.
+    fmt = ".2f" if normalize else "d"
+    thresh = cm.max() / 2.0
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(j, i, format(cm[i, j], fmt),
-                 horizontalalignment="center",
-                 color="white" if cm[i, j] > thresh else "black")
+        plt.text(
+            j,
+            i,
+            format(cm[i, j], fmt),
+            horizontalalignment="center",
+            color="white" if cm[i, j] > thresh else "black",
+        )
 
-    plt.ylabel('Actual label',fontsize=18)
-    plt.xlabel('Predicted label',fontsize=18)
+    plt.ylabel("Actual label", fontsize=18)
+    plt.xlabel("Predicted label", fontsize=18)
     plt.tight_layout()
