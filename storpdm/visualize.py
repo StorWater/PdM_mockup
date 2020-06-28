@@ -80,8 +80,8 @@ def visualise_sensor_correlation_all_engine(df, title="Correlation Matrix"):
     layout = go.Layout(
         title_text=title,
         title_x=0.5,
-        width=600,
-        height=600,
+        width=400,
+        height=400,
         xaxis_showgrid=False,
         yaxis_showgrid=False,
         yaxis_autorange="reversed",
@@ -122,7 +122,7 @@ def visualise_sensor_correlation_double(df1, df2, subplot_titles=("", "")):
     fig.add_trace(go.Heatmap(fig_subplot2.data[0]), row=1, col=2)
 
     fig.update_layout(
-        height=750, width=1200, margin=dict(l=150, b=150),
+        height=600, width=1000, margin=dict(l=150, b=150), font=dict(size=10,)
     )
     return fig
 
@@ -464,3 +464,96 @@ def plot_confusion_matrix(
     plt.ylabel("Actual label", fontsize=18)
     plt.xlabel("Predicted label", fontsize=18)
     plt.tight_layout()
+
+
+def actual_vs_pred(model, X_test, y_test, df_train_proc2):
+    """[summary]
+
+    TODO: document and clean
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
+
+    y_test_pred = model.predict(X_test)
+
+    df_plot = pd.DataFrame(
+        {"y_test": y_test, "y_test_pred": y_test_pred, "cycle": X_test.cycle}
+    )
+    df_plot = df_plot.sort_values("y_test")
+
+    fig = make_subplots(
+            rows=1,
+            cols=2,
+            subplot_titles=('Actual vs predicted RUL','Actual vs predcted RUL, selected cycles'),
+            print_grid=False,
+            horizontal_spacing=0.2,
+        )
+
+    # Create traces
+    fig.add_trace(
+        go.Scattergl(
+            x=df_plot["y_test"],
+            y=df_plot["y_test_pred"],
+            mode="markers",
+            marker=dict(
+                color=np.abs(df_plot["y_test"] - df_plot["y_test_pred"]),
+                colorscale="Viridis",
+                line_width=0,
+                opacity=0.7,
+                size=6,
+            ),
+            name="Data Points",
+            showlegend=False,
+        ),
+        row=1, col=1
+    )
+    fig.add_shape(
+        type="line", x0=0, y0=0, x1=350, y1=350, line=dict(width=4, dash="dot", color="grey"),
+    xref="x1", yref="y1")
+    fig.update_xaxes(title_text="Actual RUL", row=1, col=1)
+    fig.update_yaxes(title_text="Predicted RUL", row=1, col=1)
+
+    y_train_pred = model.predict(df_train_proc2.drop(["RUL", "id"], axis=1))
+    df_plot = pd.DataFrame(
+        {
+            "y_train": df_train_proc2.RUL,
+            "y_train_pred": y_train_pred,
+            "id": df_train_proc2.id,
+        }
+    )
+
+    # Create traces
+    engine_list = [96, 39, 80, 71]
+
+    for engine in engine_list:
+        idx = df_plot.id == engine
+        df_plot_filter = df_plot[idx]
+        fig.add_trace(
+            go.Scattergl(
+                x=df_plot_filter["y_train"],
+                y=df_plot_filter["y_train_pred"],
+                # mode="markers",
+                marker=dict(
+                    color=np.abs(
+                        df_plot_filter["y_train"] - df_plot_filter["y_train_pred"]
+                    ),
+                    colorscale="Viridis",
+                    line_width=0,
+                    opacity=0.7,
+                    size=6,
+                ),
+                name=f"Enigne {engine}",
+            ),
+            row=1, col=2
+        )
+    fig.add_shape(
+        type="line", x0=0, y0=0, x1=350, y1=350, line=dict(width=4, dash="dot", color="grey"),
+        xref="x2", yref="y2"
+    )
+    fig.update_xaxes(title_text="Actual RUL", row=1, col=2)
+    fig.update_yaxes(title_text="Predicted RUL", row=1, col=2)
+    
+    return fig
