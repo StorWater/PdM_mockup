@@ -485,12 +485,15 @@ def actual_vs_pred(model, X_test, y_test, df_train_proc2):
     df_plot = df_plot.sort_values("y_test")
 
     fig = make_subplots(
-            rows=1,
-            cols=2,
-            subplot_titles=('Actual vs predicted RUL','Actual vs predcted RUL, selected cycles'),
-            print_grid=False,
-            horizontal_spacing=0.2,
-        )
+        rows=1,
+        cols=2,
+        subplot_titles=(
+            "Actual vs predicted RUL",
+            "Actual vs predcted RUL, selected cycles",
+        ),
+        print_grid=False,
+        horizontal_spacing=0.2,
+    )
 
     # Create traces
     fig.add_trace(
@@ -508,11 +511,19 @@ def actual_vs_pred(model, X_test, y_test, df_train_proc2):
             name="Data Points",
             showlegend=False,
         ),
-        row=1, col=1
+        row=1,
+        col=1,
     )
     fig.add_shape(
-        type="line", x0=0, y0=0, x1=350, y1=350, line=dict(width=4, dash="dot", color="grey"),
-    xref="x1", yref="y1")
+        type="line",
+        x0=0,
+        y0=0,
+        x1=350,
+        y1=350,
+        line=dict(width=4, dash="dot", color="grey"),
+        xref="x1",
+        yref="y1",
+    )
     fig.update_xaxes(title_text="Actual RUL", row=1, col=1)
     fig.update_yaxes(title_text="Predicted RUL", row=1, col=1)
 
@@ -547,13 +558,189 @@ def actual_vs_pred(model, X_test, y_test, df_train_proc2):
                 ),
                 name=f"Enigne {engine}",
             ),
-            row=1, col=2
+            row=1,
+            col=2,
         )
     fig.add_shape(
-        type="line", x0=0, y0=0, x1=350, y1=350, line=dict(width=4, dash="dot", color="grey"),
-        xref="x2", yref="y2"
+        type="line",
+        x0=0,
+        y0=0,
+        x1=350,
+        y1=350,
+        line=dict(width=4, dash="dot", color="grey"),
+        xref="x2",
+        yref="y2",
     )
     fig.update_xaxes(title_text="Actual RUL", row=1, col=2)
     fig.update_yaxes(title_text="Predicted RUL", row=1, col=2)
-    
+
+    return fig
+
+
+def display_tp_fp(thres, tp, fp, title="", fig=None, i=0, name1="", name2=""):
+    """Display true positives and false positive
+
+    Parameters
+    ----------
+    thres : [type]
+        [description]
+    tp : [type]
+        [description]
+    fp : [type]
+        [description]
+    title : str, optional
+        [description], by default ""
+    fig : [type], optional
+        [description], by default None
+    i : int, optional
+        [description], by default 0
+    name1 : str, optional
+        [description], by default ""
+    name2 : str, optional
+        [description], by default ""
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
+
+    colors = [
+        "#1f77b4",  # muted blue
+        "#ff7f0e",  # safety orange
+        "#2ca02c",  # cooked asparagus green
+        "#d62728",  # brick red
+        "#9467bd",  # muted purple
+        "#8c564b",  # chestnut brown
+        "#e377c2",  # raspberry yogurt pink
+        "#7f7f7f",  # middle gray
+        "#bcbd22",  # curry yellow-green
+        "#17becf",  # blue-teal
+    ]
+    hovertext = [
+        f"TP: {r}<br>FP: {p}<br>Thres: {t:.2f}" for r, p, t in zip(tp, fp, thres)
+    ]
+
+    # ROC curve Train
+    lw = 2
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    opacity = 0.8
+
+    ## PRecision
+    fig.add_trace(
+        go.Bar(
+            x=thres[::10],
+            y=tp[::10],
+            name=name1,
+            hovertext=hovertext[::10],
+            hoverinfo="text",
+            marker_color=colors[9],
+            opacity=opacity,
+            xaxis="x1",
+            yaxis="y1",
+        ),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=thres,
+            y=tp,
+            mode="lines",
+            name=name1,
+            hovertext=hovertext,
+            hoverinfo="text",
+            line=dict(color=colors[9]),
+            showlegend=False,
+            xaxis="x1",
+            yaxis="y1",
+        ),
+        secondary_y=False,
+    )
+
+    ## recall curve
+    fig.add_trace(
+        go.Bar(
+            x=thres[::10],
+            y=fp[::10],
+            name=name2,
+            hovertext=hovertext[::10],
+            hoverinfo="text",
+            marker_color=colors[4],
+            opacity=opacity,
+            xaxis="x1",
+            yaxis="y1",
+        ),
+        secondary_y=False,
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=thres,
+            y=fp,
+            mode="lines",
+            name=name2,
+            hovertext=hovertext,
+            hoverinfo="text",
+            line=dict(color=colors[4]),
+            showlegend=False,
+            xaxis="x1",
+            yaxis="y1",
+        ),
+        secondary_y=False,
+    )
+
+    fig.update_yaxes(title_text="")
+    fig.update_xaxes(title_text="Probability threshold")
+    fig.update_yaxes(range=[0, 210])
+    fig.update_xaxes(range=[0.25, 0.95])
+
+    fig.update_layout(height=500)
+
+    return fig
+
+
+def plot_prob_RUL(model, df_train_proc2, engine = 96):
+    """Plot probability versus RUL
+
+    TODO: doc
+    """
+    y_train_pred = model.predict_proba(
+        df_train_proc2.drop(["RUL", "id", "RUL_thres"], axis=1)
+    )[:, 1]
+
+    df_plot = pd.DataFrame(
+        {
+            "y_train": df_train_proc2.RUL,
+            "y_train_pred": y_train_pred,
+            "id": df_train_proc2.id,
+        }
+    )
+
+    # Create traces
+    fig = go.Figure()
+
+    idx = df_plot.id == engine
+    df_plot_filter = df_plot[idx]
+
+    fig.add_trace(
+        go.Bar(
+            x=df_plot_filter["y_train"],
+            y=df_plot_filter["y_train_pred"],
+            name=f"Enigne {engine}",
+        )
+    )
+    fig.add_shape(
+        type="line",
+        x0=10,
+        y0=0,
+        x1=10,
+        y1=1,
+        line=dict(width=4, dash="dot", color="red"),
+    )
+    fig.update_layout(
+        title=f"Predicted probabilty of failure vs RUL engine id = {engine}",
+        xaxis_title="RUL",
+        yaxis_title="Predicted probability",
+    )
+    fig.update_xaxes(range=[0, 60])
+
     return fig
