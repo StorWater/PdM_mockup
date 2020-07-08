@@ -447,7 +447,7 @@ def plot_confusion_matrix(
     plt.title(title, fontsize=18)
     plt.colorbar(fraction=0.046, pad=0.04)
     tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
+    plt.xticks(tick_marks, classes, rotation=25)
     plt.yticks(tick_marks, classes)
 
     fmt = ".2f" if normalize else "d"
@@ -508,7 +508,7 @@ def actual_vs_pred(model, X_test, y_test, df_train_proc2):
                 opacity=0.7,
                 size=6,
             ),
-            name="Data Points",
+            name="RUL: actual vs predicted",
             showlegend=False,
         ),
         row=1,

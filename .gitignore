@@ -11,6 +11,9 @@ notebooks/.~*
 # Lets leave the docs for now.
 docs/* 
 
+# Other dtuff
+notebooks/OLD*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
